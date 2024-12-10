@@ -1,0 +1,973 @@
+{
+  "metadata": {
+    "kernelspec": {
+      "language": "python",
+      "display_name": "Python 3",
+      "name": "python3"
+    },
+    "language_info": {
+      "name": "python",
+      "version": "3.10.14",
+      "mimetype": "text/x-python",
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "pygments_lexer": "ipython3",
+      "nbconvert_exporter": "python",
+      "file_extension": ".py"
+    },
+    "kaggle": {
+      "accelerator": "none",
+      "dataSources": [
+        {
+          "sourceId": 88499,
+          "databundleVersionId": 10140629,
+          "sourceType": "competition"
+        }
+      ],
+      "dockerImageVersionId": 30786,
+      "isInternetEnabled": true,
+      "language": "python",
+      "sourceType": "notebook",
+      "isGpuEnabled": false
+    },
+    "colab": {
+      "provenance": [],
+      "include_colab_link": true
+    }
+  },
+  "nbformat_minor": 0,
+  "nbformat": 4,
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/leejh12345/ai/blob/main/crab_age_prediction/2024_AI_Baseline.ipynb123\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "kaggle에서 baseline 코드가 안보이는 관계로 부득이하게 colab에서 실행   \n",
+        "\n",
+        "files.upload()까지 코드가 진행되면, kaggle login창이 나타나고 로그인 진행   \n",
+        "이전에 kaggle 사이트에서 프로필 사진 클릭 후 -> settings 진입 -> create new token\n",
+        "여기서 생성된 kaggle.json을 업로드\n",
+        "그러면 private 데이터라고 하더라도 현재 colab으로 들고올 수 있음\n"
+      ],
+      "metadata": {
+        "id": "wsejbLf0cQKw"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!pip install kaggle\n",
+        "\n",
+        "from google.colab import files\n",
+        "files.upload()\n",
+        "\n",
+        "!mkdir -p ~/.kaggle\n",
+        "!cp kaggle.json ~/.kaggle/\n",
+        "!chmod 600 ~/.kaggle/kaggle.json\n",
+        "\n",
+        "!kaggle competitions download -c 2024-csu-iceai-crab-age-regression-competition\n",
+        "\n",
+        "!mkdir -p /kaggle/input/2024-csu-iceai-crab-age-regression-competition\n",
+        "!mkdir -p /kaggle/output/2024-csu-iceai-crab-age-regression-competition\n",
+        "!unzip 2024-csu-iceai-crab-age-regression-competition.zip -d /kaggle/input/2024-csu-iceai-crab-age-regression-competition"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 589
+        },
+        "id": "1q6drElWi0W5",
+        "outputId": "03fe6c5d-44ab-4bc5-fe70-24eb57a173f2"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: kaggle in /usr/local/lib/python3.10/dist-packages (1.6.17)\n",
+            "Requirement already satisfied: six>=1.10 in /usr/local/lib/python3.10/dist-packages (from kaggle) (1.16.0)\n",
+            "Requirement already satisfied: certifi>=2023.7.22 in /usr/local/lib/python3.10/dist-packages (from kaggle) (2024.8.30)\n",
+            "Requirement already satisfied: python-dateutil in /usr/local/lib/python3.10/dist-packages (from kaggle) (2.8.2)\n",
+            "Requirement already satisfied: requests in /usr/local/lib/python3.10/dist-packages (from kaggle) (2.32.3)\n",
+            "Requirement already satisfied: tqdm in /usr/local/lib/python3.10/dist-packages (from kaggle) (4.66.6)\n",
+            "Requirement already satisfied: python-slugify in /usr/local/lib/python3.10/dist-packages (from kaggle) (8.0.4)\n",
+            "Requirement already satisfied: urllib3 in /usr/local/lib/python3.10/dist-packages (from kaggle) (2.2.3)\n",
+            "Requirement already satisfied: bleach in /usr/local/lib/python3.10/dist-packages (from kaggle) (6.2.0)\n",
+            "Requirement already satisfied: webencodings in /usr/local/lib/python3.10/dist-packages (from bleach->kaggle) (0.5.1)\n",
+            "Requirement already satisfied: text-unidecode>=1.3 in /usr/local/lib/python3.10/dist-packages (from python-slugify->kaggle) (1.3)\n",
+            "Requirement already satisfied: charset-normalizer<4,>=2 in /usr/local/lib/python3.10/dist-packages (from requests->kaggle) (3.4.0)\n",
+            "Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.10/dist-packages (from requests->kaggle) (3.10)\n"
+          ]
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "<IPython.core.display.HTML object>"
+            ],
+            "text/html": [
+              "\n",
+              "     <input type=\"file\" id=\"files-8df07dd3-f96a-48cb-939a-553d405b7785\" name=\"files[]\" multiple disabled\n",
+              "        style=\"border:none\" />\n",
+              "     <output id=\"result-8df07dd3-f96a-48cb-939a-553d405b7785\">\n",
+              "      Upload widget is only available when the cell has been executed in the\n",
+              "      current browser session. Please rerun this cell to enable.\n",
+              "      </output>\n",
+              "      <script>// Copyright 2017 Google LLC\n",
+              "//\n",
+              "// Licensed under the Apache License, Version 2.0 (the \"License\");\n",
+              "// you may not use this file except in compliance with the License.\n",
+              "// You may obtain a copy of the License at\n",
+              "//\n",
+              "//      http://www.apache.org/licenses/LICENSE-2.0\n",
+              "//\n",
+              "// Unless required by applicable law or agreed to in writing, software\n",
+              "// distributed under the License is distributed on an \"AS IS\" BASIS,\n",
+              "// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n",
+              "// See the License for the specific language governing permissions and\n",
+              "// limitations under the License.\n",
+              "\n",
+              "/**\n",
+              " * @fileoverview Helpers for google.colab Python module.\n",
+              " */\n",
+              "(function(scope) {\n",
+              "function span(text, styleAttributes = {}) {\n",
+              "  const element = document.createElement('span');\n",
+              "  element.textContent = text;\n",
+              "  for (const key of Object.keys(styleAttributes)) {\n",
+              "    element.style[key] = styleAttributes[key];\n",
+              "  }\n",
+              "  return element;\n",
+              "}\n",
+              "\n",
+              "// Max number of bytes which will be uploaded at a time.\n",
+              "const MAX_PAYLOAD_SIZE = 100 * 1024;\n",
+              "\n",
+              "function _uploadFiles(inputId, outputId) {\n",
+              "  const steps = uploadFilesStep(inputId, outputId);\n",
+              "  const outputElement = document.getElementById(outputId);\n",
+              "  // Cache steps on the outputElement to make it available for the next call\n",
+              "  // to uploadFilesContinue from Python.\n",
+              "  outputElement.steps = steps;\n",
+              "\n",
+              "  return _uploadFilesContinue(outputId);\n",
+              "}\n",
+              "\n",
+              "// This is roughly an async generator (not supported in the browser yet),\n",
+              "// where there are multiple asynchronous steps and the Python side is going\n",
+              "// to poll for completion of each step.\n",
+              "// This uses a Promise to block the python side on completion of each step,\n",
+              "// then passes the result of the previous step as the input to the next step.\n",
+              "function _uploadFilesContinue(outputId) {\n",
+              "  const outputElement = document.getElementById(outputId);\n",
+              "  const steps = outputElement.steps;\n",
+              "\n",
+              "  const next = steps.next(outputElement.lastPromiseValue);\n",
+              "  return Promise.resolve(next.value.promise).then((value) => {\n",
+              "    // Cache the last promise value to make it available to the next\n",
+              "    // step of the generator.\n",
+              "    outputElement.lastPromiseValue = value;\n",
+              "    return next.value.response;\n",
+              "  });\n",
+              "}\n",
+              "\n",
+              "/**\n",
+              " * Generator function which is called between each async step of the upload\n",
+              " * process.\n",
+              " * @param {string} inputId Element ID of the input file picker element.\n",
+              " * @param {string} outputId Element ID of the output display.\n",
+              " * @return {!Iterable<!Object>} Iterable of next steps.\n",
+              " */\n",
+              "function* uploadFilesStep(inputId, outputId) {\n",
+              "  const inputElement = document.getElementById(inputId);\n",
+              "  inputElement.disabled = false;\n",
+              "\n",
+              "  const outputElement = document.getElementById(outputId);\n",
+              "  outputElement.innerHTML = '';\n",
+              "\n",
+              "  const pickedPromise = new Promise((resolve) => {\n",
+              "    inputElement.addEventListener('change', (e) => {\n",
+              "      resolve(e.target.files);\n",
+              "    });\n",
+              "  });\n",
+              "\n",
+              "  const cancel = document.createElement('button');\n",
+              "  inputElement.parentElement.appendChild(cancel);\n",
+              "  cancel.textContent = 'Cancel upload';\n",
+              "  const cancelPromise = new Promise((resolve) => {\n",
+              "    cancel.onclick = () => {\n",
+              "      resolve(null);\n",
+              "    };\n",
+              "  });\n",
+              "\n",
+              "  // Wait for the user to pick the files.\n",
+              "  const files = yield {\n",
+              "    promise: Promise.race([pickedPromise, cancelPromise]),\n",
+              "    response: {\n",
+              "      action: 'starting',\n",
+              "    }\n",
+              "  };\n",
+              "\n",
+              "  cancel.remove();\n",
+              "\n",
+              "  // Disable the input element since further picks are not allowed.\n",
+              "  inputElement.disabled = true;\n",
+              "\n",
+              "  if (!files) {\n",
+              "    return {\n",
+              "      response: {\n",
+              "        action: 'complete',\n",
+              "      }\n",
+              "    };\n",
+              "  }\n",
+              "\n",
+              "  for (const file of files) {\n",
+              "    const li = document.createElement('li');\n",
+              "    li.append(span(file.name, {fontWeight: 'bold'}));\n",
+              "    li.append(span(\n",
+              "        `(${file.type || 'n/a'}) - ${file.size} bytes, ` +\n",
+              "        `last modified: ${\n",
+              "            file.lastModifiedDate ? file.lastModifiedDate.toLocaleDateString() :\n",
+              "                                    'n/a'} - `));\n",
+              "    const percent = span('0% done');\n",
+              "    li.appendChild(percent);\n",
+              "\n",
+              "    outputElement.appendChild(li);\n",
+              "\n",
+              "    const fileDataPromise = new Promise((resolve) => {\n",
+              "      const reader = new FileReader();\n",
+              "      reader.onload = (e) => {\n",
+              "        resolve(e.target.result);\n",
+              "      };\n",
+              "      reader.readAsArrayBuffer(file);\n",
+              "    });\n",
+              "    // Wait for the data to be ready.\n",
+              "    let fileData = yield {\n",
+              "      promise: fileDataPromise,\n",
+              "      response: {\n",
+              "        action: 'continue',\n",
+              "      }\n",
+              "    };\n",
+              "\n",
+              "    // Use a chunked sending to avoid message size limits. See b/62115660.\n",
+              "    let position = 0;\n",
+              "    do {\n",
+              "      const length = Math.min(fileData.byteLength - position, MAX_PAYLOAD_SIZE);\n",
+              "      const chunk = new Uint8Array(fileData, position, length);\n",
+              "      position += length;\n",
+              "\n",
+              "      const base64 = btoa(String.fromCharCode.apply(null, chunk));\n",
+              "      yield {\n",
+              "        response: {\n",
+              "          action: 'append',\n",
+              "          file: file.name,\n",
+              "          data: base64,\n",
+              "        },\n",
+              "      };\n",
+              "\n",
+              "      let percentDone = fileData.byteLength === 0 ?\n",
+              "          100 :\n",
+              "          Math.round((position / fileData.byteLength) * 100);\n",
+              "      percent.textContent = `${percentDone}% done`;\n",
+              "\n",
+              "    } while (position < fileData.byteLength);\n",
+              "  }\n",
+              "\n",
+              "  // All done.\n",
+              "  yield {\n",
+              "    response: {\n",
+              "      action: 'complete',\n",
+              "    }\n",
+              "  };\n",
+              "}\n",
+              "\n",
+              "scope.google = scope.google || {};\n",
+              "scope.google.colab = scope.google.colab || {};\n",
+              "scope.google.colab._files = {\n",
+              "  _uploadFiles,\n",
+              "  _uploadFilesContinue,\n",
+              "};\n",
+              "})(self);\n",
+              "</script> "
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Saving sample_submission.csv to sample_submission (3).csv\n",
+            "Saving test_v2.csv to test_v2 (3).csv\n",
+            "Saving train.csv to train (3).csv\n",
+            "cp: cannot stat 'kaggle.json': No such file or directory\n",
+            "chmod: cannot access '/root/.kaggle/kaggle.json': No such file or directory\n",
+            "Traceback (most recent call last):\n",
+            "  File \"/usr/local/bin/kaggle\", line 5, in <module>\n",
+            "    from kaggle.cli import main\n",
+            "  File \"/usr/local/lib/python3.10/dist-packages/kaggle/__init__.py\", line 7, in <module>\n",
+            "    api.authenticate()\n",
+            "  File \"/usr/local/lib/python3.10/dist-packages/kaggle/api/kaggle_api_extended.py\", line 407, in authenticate\n",
+            "    raise IOError('Could not find {}. Make sure it\\'s located in'\n",
+            "OSError: Could not find kaggle.json. Make sure it's located in /root/.kaggle. Or use the environment method. See setup instructions at https://github.com/Kaggle/kaggle-api/\n",
+            "unzip:  cannot find or open 2024-csu-iceai-crab-age-regression-competition.zip, 2024-csu-iceai-crab-age-regression-competition.zip.zip or 2024-csu-iceai-crab-age-regression-competition.zip.ZIP.\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## 환경 설정   \n",
+        "라이브러리 설치   \n",
+        "pandas, scikt-learn"
+      ],
+      "metadata": {
+        "id": "KlVJuTHHa_lL"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!pip install pandas scikit-learn"
+      ],
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2024-11-12T16:39:36.925038Z",
+          "iopub.execute_input": "2024-11-12T16:39:36.92586Z",
+          "iopub.status.idle": "2024-11-12T16:39:48.189389Z",
+          "shell.execute_reply.started": "2024-11-12T16:39:36.925811Z",
+          "shell.execute_reply": "2024-11-12T16:39:48.188091Z"
+        },
+        "id": "_mm1ilpSa_lL",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "dbbdf3be-ed1f-4e7c-dae2-a81b6ad61b6f"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: pandas in /usr/local/lib/python3.10/dist-packages (2.2.2)\n",
+            "Requirement already satisfied: scikit-learn in /usr/local/lib/python3.10/dist-packages (1.5.2)\n",
+            "Requirement already satisfied: numpy>=1.22.4 in /usr/local/lib/python3.10/dist-packages (from pandas) (1.26.4)\n",
+            "Requirement already satisfied: python-dateutil>=2.8.2 in /usr/local/lib/python3.10/dist-packages (from pandas) (2.8.2)\n",
+            "Requirement already satisfied: pytz>=2020.1 in /usr/local/lib/python3.10/dist-packages (from pandas) (2024.2)\n",
+            "Requirement already satisfied: tzdata>=2022.7 in /usr/local/lib/python3.10/dist-packages (from pandas) (2024.2)\n",
+            "Requirement already satisfied: scipy>=1.6.0 in /usr/local/lib/python3.10/dist-packages (from scikit-learn) (1.13.1)\n",
+            "Requirement already satisfied: joblib>=1.2.0 in /usr/local/lib/python3.10/dist-packages (from scikit-learn) (1.4.2)\n",
+            "Requirement already satisfied: threadpoolctl>=3.1.0 in /usr/local/lib/python3.10/dist-packages (from scikit-learn) (3.5.0)\n",
+            "Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.10/dist-packages (from python-dateutil>=2.8.2->pandas) (1.16.0)\n"
+          ]
+        }
+      ],
+      "execution_count": null
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## 0. 필요한 라이브러리 호출"
+      ],
+      "metadata": {
+        "id": "fKIpEHxTa_lM"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "from sklearn.preprocessing import LabelEncoder, StandardScaler\n",
+        "from sklearn.tree import DecisionTreeRegressor\n",
+        "from sklearn.svm import SVR\n",
+        "from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score"
+      ],
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2024-11-12T16:41:30.561415Z",
+          "iopub.execute_input": "2024-11-12T16:41:30.561846Z",
+          "iopub.status.idle": "2024-11-12T16:41:31.875423Z",
+          "shell.execute_reply.started": "2024-11-12T16:41:30.561781Z",
+          "shell.execute_reply": "2024-11-12T16:41:31.874286Z"
+        },
+        "id": "NiwhhAm6a_lM"
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!ls /kaggle/input/2024-csu-iceai-crab-age-regression-competition"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "oJzqDIMpkf_U",
+        "outputId": "e495a99f-12bc-44b4-c5f6-8070cdc0dab1"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "sample_submission.csv  test_v2.csv  train.csv\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## 1-1. 데이터셋 로드"
+      ],
+      "metadata": {
+        "id": "dB5x-lrva_lM"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "data = pd.read_csv('/kaggle/input/2024-csu-iceai-crab-age-regression-competition/train.csv')\n",
+        "test_data = pd.read_csv('/kaggle/input/2024-csu-iceai-crab-age-regression-competition/test_v2.csv')\n",
+        "\n",
+        "print(data.head())"
+      ],
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2024-11-12T16:44:05.708489Z",
+          "iopub.execute_input": "2024-11-12T16:44:05.709161Z",
+          "iopub.status.idle": "2024-11-12T16:44:05.747119Z",
+          "shell.execute_reply.started": "2024-11-12T16:44:05.709119Z",
+          "shell.execute_reply": "2024-11-12T16:44:05.746071Z"
+        },
+        "id": "ZV1liI-aa_lM",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "ab5278c7-a20f-4ffc-f3b8-fda252058016"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "   id Sex  Length  Diameter  Height     Weight  Shucked Weight  \\\n",
+            "0   0   M  1.6375     1.300  0.4750  38.711242       17.690088   \n",
+            "1   1   M  1.5375     1.175  0.3750  33.409886       11.495722   \n",
+            "2   2   F  1.7125     1.375  0.4750  43.629880       16.726205   \n",
+            "3   3   F  1.6375     1.275  0.4375  38.980562       16.683681   \n",
+            "4   4   F  1.7125     1.375  0.4250  51.511041       22.254358   \n",
+            "\n",
+            "   Viscera Weight  Shell Weight   Age  \n",
+            "0        7.413394     11.339800  10.0  \n",
+            "1        8.022908      8.930093  17.0  \n",
+            "2       11.424848     14.033003  13.0  \n",
+            "3        6.676307     11.580771  11.0  \n",
+            "4       11.439023     12.332033  10.0  \n"
+          ]
+        }
+      ],
+      "execution_count": null
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## 1-2. 데이터셋 전처리"
+      ],
+      "metadata": {
+        "id": "CkLX0mida_lN"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "data = pd.read_csv('/kaggle/input/2024-csu-iceai-crab-age-regression-competition/train.csv')\n",
+        "test_data = pd.read_csv('/kaggle/input/2024-csu-iceai-crab-age-regression-competition/test_v2.csv')\n",
+        "\n",
+        "# 데이터 전처리 추가\n",
+        "from sklearn.preprocessing import LabelEncoder\n",
+        "\n",
+        "# Sex 컬럼 인코딩\n",
+        "le = LabelEncoder()\n",
+        "data['Sex'] = le.fit_transform(data['Sex'])\n",
+        "test_data['Sex'] = le.fit_transform(test_data['Sex'])\n",
+        "\n",
+        "# 추가: 이상치 제거 (예: Weight 열)\n",
+        "Q1 = data['Weight'].quantile(0.25)\n",
+        "Q3 = data['Weight'].quantile(0.75)\n",
+        "IQR = Q3 - Q1\n",
+        "lower_bound = Q1 - 1.5 * IQR\n",
+        "upper_bound = Q3 + 1.5 * IQR\n",
+        "data = data[(data['Weight'] >= lower_bound) & (data['Weight'] <= upper_bound)]\n",
+        "\n",
+        "# 추가: 새로운 변수 생성 (예: Volume, Density)\n",
+        "data['Volume'] = data['Length'] * data['Diameter'] * data['Height']\n",
+        "data['Density'] = data['Weight'] / data['Volume']\n",
+        "test_data['Volume'] = test_data['Length'] * test_data['Diameter'] * test_data['Height']\n",
+        "test_data['Density'] = test_data['Weight'] / test_data['Volume']\n",
+        "\n",
+        "# 추가 변수 생성\n",
+        "data['Weight_to_Length'] = data['Weight'] / data['Length']\n",
+        "data['Shucked_to_Weight'] = data['Shucked Weight'] / data['Weight']\n",
+        "data['Viscera_to_Weight'] = data['Viscera Weight'] / data['Weight']\n",
+        "data['Length_to_Height'] = data['Length'] / (data['Height'] + 1e-8)  # Divide by zero 방지\n",
+        "\n",
+        "test_data['Weight_to_Length'] = test_data['Weight'] / test_data['Length']\n",
+        "test_data['Shucked_to_Weight'] = test_data['Shucked Weight'] / test_data['Weight']\n",
+        "test_data['Viscera_to_Weight'] = test_data['Viscera Weight'] / test_data['Weight']\n",
+        "test_data['Length_to_Height'] = test_data['Length'] / (test_data['Height'] + 1e-8)"
+      ],
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2024-11-12T16:44:22.894572Z",
+          "iopub.execute_input": "2024-11-12T16:44:22.895304Z",
+          "iopub.status.idle": "2024-11-12T16:44:22.911946Z",
+          "shell.execute_reply.started": "2024-11-12T16:44:22.895262Z",
+          "shell.execute_reply": "2024-11-12T16:44:22.910889Z"
+        },
+        "id": "24gu026Ea_lN"
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# 1-2. 데이터셋 전처리\n",
+        "X = data[['Sex', 'Length', 'Diameter', 'Height', 'Weight',\n",
+        "          'Shucked Weight', 'Viscera Weight', 'Shell Weight',\n",
+        "          'Volume', 'Density', 'Weight_to_Length',\n",
+        "          'Shucked_to_Weight', 'Viscera_to_Weight', 'Length_to_Height']]\n",
+        "y = data['Age']\n",
+        "\n",
+        "X_test = test_data[['Sex', 'Length', 'Diameter', 'Height', 'Weight',\n",
+        "                    'Shucked Weight', 'Viscera Weight', 'Shell Weight',\n",
+        "                    'Volume', 'Density', 'Weight_to_Length',\n",
+        "                    'Shucked_to_Weight', 'Viscera_to_Weight', 'Length_to_Height']]\n",
+        "\n",
+        "# 데이터셋 분리\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.2, random_state=42)\n",
+        "\n",
+        "# 무한대 값과 NaN 값 처리하기\n",
+        "import numpy as np\n",
+        "\n",
+        "# 무한대 값을 NaN으로 변환\n",
+        "X_train.replace([np.inf, -np.inf], np.nan, inplace=True)\n",
+        "X_valid.replace([np.inf, -np.inf], np.nan, inplace=True)\n",
+        "X_test.replace([np.inf, -np.inf], np.nan, inplace=True)\n",
+        "\n",
+        "# NaN 값을 평균으로 대체 (또는 다른 방법을 사용할 수 있음)\n",
+        "X_train.fillna(X_train.mean(), inplace=True)\n",
+        "X_valid.fillna(X_valid.mean(), inplace=True)\n",
+        "X_test.fillna(X_test.mean(), inplace=True)\n",
+        "\n",
+        "# 스케일링 (예: MinMaxScaler로 변경)\n",
+        "from sklearn.preprocessing import MinMaxScaler\n",
+        "scaler = MinMaxScaler()\n",
+        "\n",
+        "X_train_scaled = scaler.fit_transform(X_train)\n",
+        "X_valid_scaled = scaler.transform(X_valid)\n",
+        "X_test_scaled = scaler.transform(X_test)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "W_7ZmTVv_NlQ",
+        "outputId": "38d67ecb-d05c-45aa-d69e-65789d1744ba"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "<ipython-input-29-c2bbab8d21f4>:23: SettingWithCopyWarning: \n",
+            "A value is trying to be set on a copy of a slice from a DataFrame\n",
+            "\n",
+            "See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n",
+            "  X_test.replace([np.inf, -np.inf], np.nan, inplace=True)\n",
+            "<ipython-input-29-c2bbab8d21f4>:28: SettingWithCopyWarning: \n",
+            "A value is trying to be set on a copy of a slice from a DataFrame\n",
+            "\n",
+            "See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n",
+            "  X_test.fillna(X_test.mean(), inplace=True)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## 3.a. Decision tree를 이용한 regression model"
+      ],
+      "metadata": {
+        "id": "uB5WL1lZa_lN"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "dt_regressor = DecisionTreeRegressor(random_state = 42)\n",
+        "dt_regressor.fit(X_train, y_train)\n",
+        "y_pred_dt = dt_regressor.predict(X_valid)"
+      ],
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2024-11-12T16:45:49.415811Z",
+          "iopub.execute_input": "2024-11-12T16:45:49.41678Z",
+          "iopub.status.idle": "2024-11-12T16:45:49.512176Z",
+          "shell.execute_reply.started": "2024-11-12T16:45:49.416734Z",
+          "shell.execute_reply": "2024-11-12T16:45:49.511117Z"
+        },
+        "id": "9bvLxEoGa_lN"
+      },
+      "outputs": [],
+      "execution_count": null
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## 3.b. support vector machine를 이용한 regression model"
+      ],
+      "metadata": {
+        "id": "ZKUzQlFKa_lN"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from sklearn.model_selection import RandomizedSearchCV\n",
+        "\n",
+        "svm_params = {\n",
+        "    'C': [0.1, 1, 10, 100],\n",
+        "    'kernel': ['linear', 'rbf']\n",
+        "}\n",
+        "\n",
+        "svm_search = RandomizedSearchCV(\n",
+        "    SVR(),\n",
+        "    param_distributions=svm_params,\n",
+        "    n_iter=10, scoring='neg_mean_absolute_error', cv=3, random_state=42\n",
+        ")\n",
+        "svm_search.fit(X_train_scaled, y_train)\n",
+        "svm_regressor = svm_search.best_estimator_\n",
+        "\n",
+        "y_pred_svm = svm_regressor.predict(X_valid_scaled)"
+      ],
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2024-11-12T16:46:14.137216Z",
+          "iopub.execute_input": "2024-11-12T16:46:14.137614Z",
+          "iopub.status.idle": "2024-11-12T16:46:22.093687Z",
+          "shell.execute_reply.started": "2024-11-12T16:46:14.13758Z",
+          "shell.execute_reply": "2024-11-12T16:46:22.092678Z"
+        },
+        "id": "yvyzIm1Ua_lN",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "1a1b27f4-e44d-4596-90bb-37540cfca78e"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "/usr/local/lib/python3.10/dist-packages/sklearn/model_selection/_search.py:320: UserWarning: The total space of parameters 8 is smaller than n_iter=10. Running 8 iterations. For exhaustive searches, use GridSearchCV.\n",
+            "  warnings.warn(\n"
+          ]
+        }
+      ],
+      "execution_count": null
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# 추가: Random Forest Regressor\n",
+        "from sklearn.ensemble import RandomForestRegressor\n",
+        "\n",
+        "rf_params = {\n",
+        "    'n_estimators': [50, 100, 200],\n",
+        "    'max_depth': [10, 20, None],\n",
+        "    'min_samples_split': [2, 5, 10],\n",
+        "    'min_samples_leaf': [1, 2, 4]\n",
+        "}\n",
+        "\n",
+        "rf_search = RandomizedSearchCV(\n",
+        "    RandomForestRegressor(random_state=42),\n",
+        "    param_distributions=rf_params,\n",
+        "    n_iter=10, scoring='neg_mean_absolute_error', cv=3, random_state=42\n",
+        ")\n",
+        "rf_search.fit(X_train, y_train)\n",
+        "rf_regressor = rf_search.best_estimator_\n",
+        "\n",
+        "y_pred_rf = rf_regressor.predict(X_valid)\n"
+      ],
+      "metadata": {
+        "id": "4W-Arm8O_SnV"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Additional Model: XGBoost Regressor\n",
+        "from xgboost import XGBRegressor\n",
+        "\n",
+        "xgb_params = {\n",
+        "    'n_estimators': [100, 200, 500],\n",
+        "    'learning_rate': [0.01, 0.05, 0.1],\n",
+        "    'max_depth': [3, 5, 7],\n",
+        "    'subsample': [0.7, 0.8, 1.0],\n",
+        "    'colsample_bytree': [0.7, 0.8, 1.0]\n",
+        "}\n",
+        "\n",
+        "xgb_search = RandomizedSearchCV(\n",
+        "    XGBRegressor(random_state=42),\n",
+        "    param_distributions=xgb_params,\n",
+        "    n_iter=20, scoring='neg_mean_absolute_error', cv=3, random_state=42\n",
+        ")\n",
+        "xgb_search.fit(X_train_scaled, y_train)\n",
+        "xgb_regressor = xgb_search.best_estimator_\n",
+        "\n",
+        "y_pred_xgb = xgb_regressor.predict(X_valid_scaled)"
+      ],
+      "metadata": {
+        "id": "oh-xuexMRiTG"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## 4. 검증 데이터를 이용한 평가"
+      ],
+      "metadata": {
+        "id": "HnTZIE8ja_lO"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "from sklearn.metrics import mean_absolute_error\n",
+        "\n",
+        "# 기존 모델 평가\n",
+        "mae_dt = mean_absolute_error(y_valid, y_pred_dt)\n",
+        "print(\"Decision Tree Regressor\")\n",
+        "print(f\"Mean Absolute Error: {mae_dt:.4f}\")\n",
+        "\n",
+        "mae_svm = mean_absolute_error(y_valid, y_pred_svm)\n",
+        "print(\"Support Vector Machine Regressor\")\n",
+        "print(f\"Mean Absolute Error: {mae_svm:.4f}\")\n",
+        "\n",
+        "# 추가 모델 평가\n",
+        "mae_rf = mean_absolute_error(y_valid, y_pred_rf)\n",
+        "print(\"Random Forest Regressor\")\n",
+        "print(f\"Mean Absolute Error: {mae_rf:.4f}\")\n",
+        "\n",
+        "mae_xgb = mean_absolute_error(y_valid, y_pred_xgb)\n",
+        "print(\"XGBoost Regressor\")\n",
+        "print(f\"Mean Absolute Error: {mae_xgb:.4f}\")"
+      ],
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2024-11-12T16:46:57.216006Z",
+          "iopub.execute_input": "2024-11-12T16:46:57.216448Z",
+          "iopub.status.idle": "2024-11-12T16:46:57.22546Z",
+          "shell.execute_reply.started": "2024-11-12T16:46:57.216408Z",
+          "shell.execute_reply": "2024-11-12T16:46:57.224334Z"
+        },
+        "id": "odqoCZt4a_lO",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "cb8eaf5d-10c8-4525-effd-99f6c921ed4a"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Decision Tree Regressor\n",
+            "Mean Absolute Error: 1.9108\n",
+            "Support Vector Machine Regressor\n",
+            "Mean Absolute Error: 1.3206\n",
+            "Random Forest Regressor\n",
+            "Mean Absolute Error: 1.3533\n",
+            "XGBoost Regressor\n",
+            "Mean Absolute Error: 1.3337\n"
+          ]
+        }
+      ],
+      "execution_count": null
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "## 5. 제출 파일 생성"
+      ],
+      "metadata": {
+        "id": "HCm8zNZia_lO"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "# 각 모델의 MAE 기반 가중치 계산\n",
+        "total_mae = 1 / mae_dt + 1 / mae_svm + 1 / mae_rf + 1 / mae_xgb\n",
+        "w_dt = (1 / mae_dt) / total_mae\n",
+        "w_svm = (1 / mae_svm) / total_mae\n",
+        "w_rf = (1 / mae_rf) / total_mae\n",
+        "w_xgb = (1 / mae_xgb) / total_mae\n",
+        "\n",
+        "print(f\"Dynamic Weights -> DT: {w_dt:.2f}, SVM: {w_svm:.2f}, RF: {w_rf:.2f}, XGB: {w_xgb:.2f}\")\n",
+        "\n",
+        "# 가중치 기반 앙상블\n",
+        "final_predictions = (w_dt * dt_regressor.predict(X_test_scaled) +\n",
+        "                     w_svm * svm_regressor.predict(X_test_scaled) +\n",
+        "                     w_rf * rf_regressor.predict(X_test_scaled) +\n",
+        "                     w_xgb * xgb_regressor.predict(X_test_scaled))\n",
+        "\n",
+        "# 제출 파일 생성\n",
+        "results = pd.DataFrame({\n",
+        "    'id': range(len(final_predictions)),\n",
+        "    'Age': final_predictions\n",
+        "})\n",
+        "results.to_csv('final_submission.csv', index=False)\n",
+        "\n",
+        "from google.colab import files\n",
+        "files.download('final_submission.csv')"
+      ],
+      "metadata": {
+        "trusted": true,
+        "execution": {
+          "iopub.status.busy": "2024-11-12T16:54:35.514494Z",
+          "iopub.execute_input": "2024-11-12T16:54:35.514952Z",
+          "iopub.status.idle": "2024-11-12T16:54:36.676742Z",
+          "shell.execute_reply.started": "2024-11-12T16:54:35.51491Z",
+          "shell.execute_reply": "2024-11-12T16:54:36.675681Z"
+        },
+        "id": "vpRxg2uJa_lO",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 109
+        },
+        "outputId": "999266cd-029e-47bf-9a45-44fb9f856ff5"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Dynamic Weights -> DT: 0.19, SVM: 0.27, RF: 0.27, XGB: 0.27\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "/usr/local/lib/python3.10/dist-packages/sklearn/base.py:493: UserWarning: X does not have valid feature names, but DecisionTreeRegressor was fitted with feature names\n",
+            "  warnings.warn(\n",
+            "/usr/local/lib/python3.10/dist-packages/sklearn/base.py:493: UserWarning: X does not have valid feature names, but RandomForestRegressor was fitted with feature names\n",
+            "  warnings.warn(\n"
+          ]
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "<IPython.core.display.Javascript object>"
+            ],
+            "application/javascript": [
+              "\n",
+              "    async function download(id, filename, size) {\n",
+              "      if (!google.colab.kernel.accessAllowed) {\n",
+              "        return;\n",
+              "      }\n",
+              "      const div = document.createElement('div');\n",
+              "      const label = document.createElement('label');\n",
+              "      label.textContent = `Downloading \"${filename}\": `;\n",
+              "      div.appendChild(label);\n",
+              "      const progress = document.createElement('progress');\n",
+              "      progress.max = size;\n",
+              "      div.appendChild(progress);\n",
+              "      document.body.appendChild(div);\n",
+              "\n",
+              "      const buffers = [];\n",
+              "      let downloaded = 0;\n",
+              "\n",
+              "      const channel = await google.colab.kernel.comms.open(id);\n",
+              "      // Send a message to notify the kernel that we're ready.\n",
+              "      channel.send({})\n",
+              "\n",
+              "      for await (const message of channel.messages) {\n",
+              "        // Send a message to notify the kernel that we're ready.\n",
+              "        channel.send({})\n",
+              "        if (message.buffers) {\n",
+              "          for (const buffer of message.buffers) {\n",
+              "            buffers.push(buffer);\n",
+              "            downloaded += buffer.byteLength;\n",
+              "            progress.value = downloaded;\n",
+              "          }\n",
+              "        }\n",
+              "      }\n",
+              "      const blob = new Blob(buffers, {type: 'application/binary'});\n",
+              "      const a = document.createElement('a');\n",
+              "      a.href = window.URL.createObjectURL(blob);\n",
+              "      a.download = filename;\n",
+              "      div.appendChild(a);\n",
+              "      a.click();\n",
+              "      div.remove();\n",
+              "    }\n",
+              "  "
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "<IPython.core.display.Javascript object>"
+            ],
+            "application/javascript": [
+              "download(\"download_bf072c6b-03cf-4609-a291-236bc0ee571c\", \"final_submission.csv\", 45461)"
+            ]
+          },
+          "metadata": {}
+        }
+      ],
+      "execution_count": null
+    }
+  ]
+}
